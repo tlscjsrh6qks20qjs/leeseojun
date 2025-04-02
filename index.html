@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>문을 여는 게임</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .game-container {
+      text-align: center;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 320px;
+    }
+
+    #map {
+      margin-bottom: 20px;
+    }
+
+    #door {
+      width: 120px;
+      height: 120px;
+      background-color: grey;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+    }
+
+    .locked {
+      background-color: red;
+    }
+
+    #puzzle {
+      margin-top: 20px;
+    }
+
+    input {
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .fill-blank {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>스테이지 1: 문을 열어라!</h1>
+    <div id="map">
+      <div id="door" class="locked">문</div>
+    </div>
+    <div id="puzzle">
+      <!-- 스테이지 문제 영역 -->
+    </div>
+    <div id="hint" class="hidden">
+      <button onclick="showHint()">힌트 보기</button>
+    </div>
+    <div id="next-stage" class="hidden">
+      <button onclick="nextStage()">다음 스테이지</button>
+    </div>
+    <div id="skip-stage" class="hidden">
+      <button onclick="skipStage()">단계 건너뛰기</button>
+    </div>
+    <div id="congratulations" class="hidden">
+      <h2>축하합니다! 스테이지 완료!</h2>
+    </div>
+  </div>
+
+  <script>
+    let currentStage = 1; // 현재 스테이지
+    const totalStages = 10; // 총 스테이지
+
+    // 문제를 생성하는 함수
+    function generatePuzzle(stage) {
+      const puzzleElement = document.getElementById('puzzle');
+      const hintElement = document.getElementById('hint');
+      const nextStageButton = document.getElementById('next-stage');
+      const skipStageButton = document.getElementById('skip-stage');
+      const congratsMessage = document.getElementById('congratulations');
+      puzzleElement.innerHTML = ''; // 기존 문제 지우기
+
+      // 문제 유형에 따라 다르게 설정
+      if (stage === 1) {
+        // 수학 문제: 5 + 4 = ?
+        puzzleElement.innerHTML = `<p>단서: 5 + 4 = ?</p>
+                                  <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                  <button onclick="checkAnswer(9)">정답 확인</button>`;
+      } else if (stage === 2) {
+        // 빈칸 문제: 6 + __ = 12
+        puzzleElement.innerHTML = `<p class="fill-blank">빈칸 채우기: 6 + __ = 12</p>
+                                   <input type="text" id="answer" placeholder="빈칸에 숫자를 입력하세요">
+                                   <button onclick="checkAnswer(6)">정답 확인</button>`;
+      } else if (stage === 3) {
+        // 수학 문제: 7 * 2 - 4 = ?
+        puzzleElement.innerHTML = `<p>단서: 7 * 2 - 4 = ?</p>
+                                   <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                   <button onclick="checkAnswer(10)">정답 확인</button>`;
+      } else if (stage === 4) {
+        // 다단계 문제: (3 + 4) * 2 - 6 = ?
+        puzzleElement.innerHTML = `<p>단서: (3 + 4) * 2 - 6 = ?</p>
+                                   <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                   <button onclick="checkAnswer(8)">정답 확인</button>`;
+      } else if (stage === 5) {
+        // 텍스트 문제: "모든 길은 __로 통한다."
+        puzzleElement.innerHTML = `<p>단서: "모든 길은 __로 통한다."</p>
+                                   <input type="text" id="answer" placeholder="빈칸에 맞는 단어를 입력하세요">
+                                   <button onclick="checkAnswer('로마')">정답 확인</button>`;
+      } else if (stage === 6) {
+        // 수학 문제: 15 / 3 + 4 = ?
+        puzzleElement.innerHTML = `<p>단서: 15 / 3 + 4 = ?</p>
+                                   <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                   <button onclick="checkAnswer(9)">정답 확인</button>`;
+      } else if (stage === 7) {
+        // 복잡한 수학 문제: 11 * 2 - 5 + 3 = ?
+        puzzleElement.innerHTML = `<p>단서: 11 * 2 - 5 + 3 = ?</p>
+                                   <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                   <button onclick="checkAnswer(20)">정답 확인</button>`;
+      } else if (stage === 8) {
+        // 수학 문제: 7 * 3 + 9 = ?
+        puzzleElement.innerHTML = `<p>단서: 7 * 3 + 9 = ?</p>
+                                   <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                   <button onclick="checkAnswer(30)">정답 확인</button>`;
+      } else if (stage === 9) {
+        // 수학 문제: 10 + 3 * 2 = ?
+        puzzleElement.innerHTML = `<p>단서: 10 + 3 * 2 = ?</p>
+                                   <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                   <button onclick="checkAnswer(16)">정답 확인</button>`;
+      } else if (stage === 10) {
+        // 복잡한 수학 문제: 5 * (3 + 2) - 4 = ?
+        puzzleElement.innerHTML = `<p>단서: 5 * (3 + 2) - 4 = ?</p>
+                                   <input type="text" id="answer" placeholder="정답을 입력하세요">
+                                   <button onclick="checkAnswer(21)">정답 확인</button>`;
+      }
+
+      hintElement.classList.remove('hidden');
+      nextStageButton.classList.add('hidden');
+      skipStageButton.classList.remove('hidden');
+      congratsMessage.classList.add('hidden');
+    }
+
+    // 정답을 확인하는 함수
+    function checkAnswer(correctAnswer) {
+      const answer = document.getElementById('answer').value;
+      const door = document.getElementById('door');
+      
+      if (Number(answer) === correctAnswer || answer === correctAnswer) {
+        door.classList.remove('locked');
+        door.style.backgroundColor = 'green';
+        door.innerText = "문이 열렸습니다!";
+        document.getElementById('congratulations').classList.remove('hidden');
+        document.getElementById('next-stage').classList.remove('hidden');
+        document.getElementById('skip-stage').classList.add('hidden');
+      } else {
+        alert("정답이 아닙니다. 다시 시도하세요.");
+      }
+    }
+
+    // 다음 스테이지로 넘어가는 함수
+    function nextStage() {
+      if (currentStage < totalStages) {
+        currentStage++;
+        document.querySelector('h1').innerText = `스테이지 ${currentStage}: 문을 열어라!`;
+        const door = document.getElementById('door');
+        door.classList.add('locked');
+        door.style.backgroundColor = 'grey';
+        door.innerText = "문";
+        generatePuzzle(currentStage);
+      } else {
+        alert("축하합니다! 모든 스테이지를 완료했습니다.");
+      }
+    }
+
+    // 단계 건너뛰기 함수
+    function skipStage() {
+      if (currentStage < totalStages) {
+        currentStage++;
+        document.querySelector('h1').innerText = `스테이지 ${currentStage}: 문을 열어라!`;
+        const door = document.getElementById('door');
+        door.classList.add('locked');
+        door.style.backgroundColor = 'grey';
+        door.innerText = "문";
+        generatePuzzle(currentStage);
+      }
+    }
+
+    // 힌트를 보여주는 함수
+    function showHint() {
+      if (currentStage === 1) {
+        alert("힌트: 더하기 문제입니다. 5와 4를 더해보세요.");
+      } else if (currentStage === 2) {
+        alert("힌트: 6을 더하면 12가 됩니다. 무엇을 더해야 할까요?");
+      } else if (currentStage === 3) {
+        alert("힌트: 7 곱하기 2에서 4를 빼세요.");
+      } else if (currentStage === 4) {
+        alert("힌트: 3과 4를 더한 후 2를 곱하고 6을 빼세요.");
+      } else {
+        alert("힌트: 문제를 잘 살펴보세요.");
+      }
+    }
+
+    // 첫 스테이지 설정
+    generatePuzzle(currentStage);
+  </script>
+</body>
+</html>
